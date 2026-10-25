@@ -1,0 +1,193 @@
+/* ===== Live translation panel ===== */
+
+#yt-live-translation.ytlt-hidden {
+  display: none !important;
+}
+
+#yt-live-translation {
+  --ytlt-red: #ff0033;
+  box-sizing: border-box;
+  font-family: "YouTube Sans", Roboto, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+#yt-live-translation .ytlt-empty {
+  display: none;
+}
+
+/* ---------- Normal view: panel below the video ---------- */
+
+#yt-live-translation.ytlt-below {
+  margin: 12px 0 4px;
+  padding: 12px 16px 14px;
+  border-radius: 12px;
+  text-align: left;
+  background: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, 0.05));
+  color: var(--yt-spec-text-primary, #0f0f0f);
+}
+
+.ytlt-below .ytlt-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--yt-spec-text-secondary, #606060);
+}
+
+.ytlt-below .ytlt-title {
+  color: var(--yt-spec-text-primary, #0f0f0f);
+}
+
+.ytlt-below .ytlt-meta {
+  margin-left: auto;
+}
+
+.ytlt-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--yt-spec-text-secondary, #909090);
+}
+
+.ytlt-capturing .ytlt-dot {
+  background: var(--ytlt-red);
+  animation: ytlt-pulse 1.6s ease-out infinite;
+}
+
+.ytlt-below .ytlt-line {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--yt-spec-text-secondary, #606060);
+}
+
+.ytlt-below .ytlt-current {
+  font-size: 19px;
+  line-height: 1.55;
+  font-weight: 500;
+}
+
+.ytlt-below .ytlt-live {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--yt-spec-text-secondary, #606060);
+}
+
+.ytlt-below .ytlt-live::before {
+  content: "原文";
+  display: inline-block;
+  margin-right: 8px;
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 18px;
+  border-radius: 4px;
+  vertical-align: 1px;
+  background: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.1));
+}
+
+.ytlt-below .ytlt-placeholder {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--yt-spec-text-secondary, #606060);
+}
+
+/* Dark-theme fallbacks, in case YouTube's theme variables aren't available */
+html[dark] #yt-live-translation.ytlt-below {
+  background: var(--yt-spec-badge-chip-background, rgba(255, 255, 255, 0.1));
+  color: var(--yt-spec-text-primary, #f1f1f1);
+}
+html[dark] .ytlt-below .ytlt-title {
+  color: var(--yt-spec-text-primary, #f1f1f1);
+}
+html[dark] .ytlt-below .ytlt-header,
+html[dark] .ytlt-below .ytlt-line,
+html[dark] .ytlt-below .ytlt-live,
+html[dark] .ytlt-below .ytlt-placeholder {
+  color: var(--yt-spec-text-secondary, #aaaaaa);
+}
+html[dark] .ytlt-below .ytlt-live::before {
+  background: var(--yt-spec-10-percent-layer, rgba(255, 255, 255, 0.1));
+}
+
+/* ---------- Fullscreen: captions over the video ---------- */
+
+#yt-live-translation.ytlt-overlay {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 10%;
+  text-align: center;
+  color: #ffffff;
+  pointer-events: none;
+  z-index: 999999;
+}
+
+.ytlt-overlay .ytlt-header,
+.ytlt-overlay .ytlt-history,
+.ytlt-overlay .ytlt-placeholder {
+  display: none;
+}
+
+.ytlt-overlay .ytlt-current span,
+.ytlt-overlay .ytlt-live span {
+  padding: 0.08em 0.45em;
+  border-radius: 4px;
+  line-height: 1.65;
+  background: rgba(8, 8, 8, 0.75);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.ytlt-overlay .ytlt-current {
+  font-size: clamp(20px, 2.2vw, 40px);
+  font-weight: 500;
+}
+
+.ytlt-overlay .ytlt-live {
+  margin-top: 0.35em;
+  font-size: clamp(14px, 1.3vw, 24px);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ---------- Motion ---------- */
+
+/* Blinking caret after the text that's still being transcribed */
+.ytlt-live span::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 3px;
+  vertical-align: -0.15em;
+  background: currentColor;
+  animation: ytlt-blink 1s steps(1) infinite;
+}
+
+.ytlt-enter {
+  animation: ytlt-rise 0.22s ease-out;
+}
+
+@keyframes ytlt-rise {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes ytlt-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 0, 51, 0.55); }
+  70%  { box-shadow: 0 0 0 6px rgba(255, 0, 51, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 0, 51, 0); }
+}
+
+@keyframes ytlt-blink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #yt-live-translation,
+  #yt-live-translation * {
+    animation: none !important;
+  }
+}

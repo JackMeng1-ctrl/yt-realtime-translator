@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "YT Realtime Pro Translator (Engineering)",
+  "version": "1.0.0",
+  "permissions": [
+    "tabCapture",
+    "activeTab",
+    "scripting",
+    "storage",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*",
+    "http://localhost:8787/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Start Translator"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content.js"],
+      "css": ["subtitle.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["offscreen.html", "offscreen.js", "pcm-worklet.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
