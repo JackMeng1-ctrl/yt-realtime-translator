@@ -4,8 +4,6 @@ English | [中文](README.zh-CN.md)
 
 A Chrome extension and Node.js relay server that turn the speech in a YouTube video into live translated subtitles. Tab audio is transcribed with the OpenAI Realtime API, each finished sentence is translated by an LLM, and the subtitles appear under the video (or over it in fullscreen) a moment after they are spoken.
 
-**Demo video:** _add link here_
-
 ## Features
 
 - Live subtitles for any YouTube video, translated into the language you choose (Simplified Chinese by default)
