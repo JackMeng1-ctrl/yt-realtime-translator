@@ -82,7 +82,7 @@ All settings live in `server/.env`:
 | --- | --- | --- |
 | `OPENAI_API_KEY` | (required) | Your OpenAI API key |
 | `TRANSCRIBE_MODEL` | `gpt-live-transcribe` | Realtime transcription model |
-| `TRANSLATE_MODEL` | `gpt-4o` | Model that translates each sentence |
+| `TRANSLATE_MODEL` | `gpt-6-luna` | Model that translates each sentence |
 | `TARGET_LANG` | `简体中文` | Language of the subtitles |
 | `PORT` | `8787` | WebSocket port; the extension connects to `ws://localhost:8787` |
 | `VAD_RMS_THRESHOLD` | `500` | Audio level counted as speech; raise it if music triggers subtitles |
