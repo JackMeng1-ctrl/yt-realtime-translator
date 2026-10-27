@@ -82,7 +82,7 @@
 | --- | --- | --- |
 | `OPENAI_API_KEY` | （必填） | 你的 OpenAI API Key |
 | `TRANSCRIBE_MODEL` | `gpt-live-transcribe` | 实时转写模型 |
-| `TRANSLATE_MODEL` | `gpt-4o` | 翻译每句话的模型 |
+| `TRANSLATE_MODEL` | `gpt-6-luna` | 翻译每句话的模型 |
 | `TARGET_LANG` | `简体中文` | 字幕的目标语言 |
 | `PORT` | `8787` | WebSocket 端口，扩展固定连接 `ws://localhost:8787` |
 | `VAD_RMS_THRESHOLD` | `500` | 判定为语音的音量阈值；背景音乐也出字幕时调高 |
