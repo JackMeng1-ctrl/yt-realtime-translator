@@ -10,6 +10,7 @@ let capturing = false;
 let history = []; // older translated lines, oldest first
 let current = ""; // latest translated line
 let live = "";    // original-language text still being transcribed
+let streaming = false; // the current line is still being translated
 
 // ---------------- DOM ----------------
 function el(tag, className, text) {
@@ -76,6 +77,7 @@ function clearText() {
   history = [];
   current = "";
   live = "";
+  streaming = false;
 }
 
 // ---------------- Placement ----------------
@@ -131,6 +133,20 @@ chrome.runtime.onMessage.addListener((msg) => {
     render();
   }
 
+  // A translation arriving piece by piece. The first piece starts a new line,
+  // the rest extend it in place, so the subtitle shows up while it is still
+  // being translated instead of only when the whole sentence is finished.
+  if (msg.type === "FINAL_DELTA") {
+    const text = msg.text || "";
+    if (!text) return;
+    capturing = true;
+    const isFirstPiece = !streaming;
+    if (isFirstPiece && current) history = [...history, current].slice(-MAX_HISTORY);
+    streaming = true;
+    current = text;
+    render({ animate: isFirstPiece });
+  }
+
   if (msg.type === "FINAL") {
     const text = msg.text || "";
     if (!text) {
@@ -139,9 +155,12 @@ chrome.runtime.onMessage.addListener((msg) => {
       return;
     }
     capturing = true;
-    if (current) history = [...history, current].slice(-MAX_HISTORY);
+    const wasStreaming = streaming;
+    // While streaming, the line was already moved into place by the first piece.
+    if (!wasStreaming && current) history = [...history, current].slice(-MAX_HISTORY);
+    streaming = false;
     current = text;
-    render({ animate: true });
+    render({ animate: !wasStreaming });
   }
 });
 

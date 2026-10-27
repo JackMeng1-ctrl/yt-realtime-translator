@@ -8,7 +8,10 @@ A Chrome extension and Node.js relay server that turn the speech in a YouTube vi
 
 - Live subtitles for any YouTube video, translated into the language you choose (Simplified Chinese by default)
 - Shows the original-language transcript as it is being recognized, then the translation once the sentence is complete
+- Subtitles appear while they are still being translated, rather than after the whole sentence is done
 - Subtitles stay in spoken order even when transcriptions and translations finish out of order
+- Each line is translated with the previous few lines as context, so names, terms and pronouns stay consistent
+- Only speech is sent for transcription, which is what the API bills for
 - Panel matches YouTube's light and dark themes and switches to caption style in fullscreen
 - One click on the toolbar icon starts or stops translation for the current tab
 - The OpenAI API key stays on the server and never reaches the browser
@@ -37,6 +40,12 @@ A Chrome extension and Node.js relay server that turn the speech in a YouTube vi
 **Audio capture.** Manifest V3 service workers cannot hold a media stream, so the background script gets a stream ID with `chrome.tabCapture.getMediaStreamId` and hands it to an offscreen document. There an AudioWorklet downmixes the tab audio to mono 16-bit PCM at 24 kHz, the format the Realtime API expects, and the page streams it to the server in 200 ms chunks.
 
 **Sentence segmentation.** The transcription session runs with server-side turn detection turned off, so the relay decides when a sentence is finished. It measures the RMS level of each chunk: once it has seen at least 300 ms of speech followed by 600 ms of silence, it commits the audio buffer. Continuous speech or background music is committed every 7 s at most, and buffers that never contained speech are cleared.
+
+**Cost.** Transcription is billed per minute of audio and is most of what the project costs to run, so the same voice activity detection decides what is worth sending: between sentences nothing goes upstream. The 400 ms of audio recorded just before speech was detected is sent along with it, so the first syllable is not clipped. The `[audio]` log line reports what share of the audio was forwarded.
+
+**Latency.** Each subtitle waits for `END_SILENCE_MS` of silence, then transcription, then translation. The translation is streamed: the line appears as soon as its first few characters arrive and fills in from there, which removes most of the visible wait. Only the line that is next to be shown is streamed, so a segment that finished early still waits its turn and the order never breaks.
+
+**Translation context.** Each line is translated with the last few lines, and their translations, replayed as earlier turns of the conversation. Translating a sentence on its own loses pronouns, names and terminology; passing the context back costs very little and fixes most of it. Context is recorded in the order subtitles were shown, not the order translations finished, so it always follows the spoken order.
 
 **Ordering.** Each committed segment gets a sequence number. Transcriptions and translations can come back out of order, so finished translations wait in a buffer and are released strictly in sequence. If one segment never arrives, the server skips it after 5 s so the subtitles do not stall.
 
@@ -78,6 +87,11 @@ All settings live in `server/.env`:
 | `PORT` | `8787` | WebSocket port; the extension connects to `ws://localhost:8787` |
 | `VAD_RMS_THRESHOLD` | `500` | Audio level counted as speech; raise it if music triggers subtitles |
 | `MAX_SEGMENT_MS` | `7000` | Longest segment before it is sent for transcription |
+| `END_SILENCE_MS` | `600` | Silence that ends a sentence; lower it for faster subtitles |
+| `CONTEXT_TURNS` | `3` | Previous subtitles given to the translator as context; `0` turns it off |
+| `TRANSLATE_REASONING_EFFORT` | `none` | How much a reasoning model thinks before translating |
+| `TRANSLATE_TEMPERATURE` | unset | Only for older models; reasoning models reject it |
+| `PRE_ROLL_MS` | `400` | Audio kept from just before speech was detected |
 
 ## Project structure
 
@@ -98,8 +112,7 @@ server/
 ## Known limitations
 
 - The server runs locally, and the extension only talks to `localhost:8787`
-- Each sentence is translated on its own, so context across sentences can be lost
-- Videos with loud background music may need a higher `VAD_RMS_THRESHOLD`
+- Videos with loud background music may need a higher `VAD_RMS_THRESHOLD`, which also keeps music from being sent for transcription
 - Every minute of audio is billed to your OpenAI account for both transcription and translation
 
 ## Tech stack
